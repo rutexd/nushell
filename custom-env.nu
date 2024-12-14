@@ -140,6 +140,15 @@ def close-sleep-not [] {
 }
 
 
+# module python {
+#   # find current python path 
+#   def findPython [] {
+#     let pythonPath = ((which python).path | get 0)
+#     let folder = (pythonPath | path dirname)
+#     echo $"Python path: ($pythonPath)"
+#   }
+# }
+
 module java {
   def --env export_java [home: string] {
     load-env {
