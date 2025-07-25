@@ -3,16 +3,32 @@ use std "path add"
 # alias kill = ^taskkill /f /im
 # alias pkill = ^taskkill /f /im
 alias cwd = pwd
-alias mc = portablemc
 alias reboot = shutdown /g /t 1
 
-path add { windows: "C:\\sdk\\maven\\bin" }
-path add { windows: "C:\\Program Files\\Yggdrasil\\" }
+# path add { windows: "C:\\sdk\\maven\\bin" }
+# path add { windows: "C:\\Program Files\\Yggdrasil\\" }
+# path add { windows: "C:\\Program Files\\7-Zip\\" }
+path add { windows: "c:\\soft\\adb\\" }
 $env.EDITOR = "code"
 
 def open-custom-scripts-dir [] {
   code ($nu.env-path | path dirname | path join "scripts")
 }
+
+def gemini_models [] {
+  return [
+    "gemini-2.5-flash",
+    "gemini-2.5-pro",
+  ]
+}
+
+# simple alias for gemini to run in the c:\tmp\gem directory, not cwd.
+def gemi [model: string@gemini_models = "gemini-2.5-flash"] {
+  cd c:\tmp\gem
+  gemini --model $model
+}
+
+alias llm = gemi
 
 
 def run-java [home: string, args: closure] {
@@ -81,9 +97,9 @@ def uptime [] { sys host | get uptime }
 
 def free [] { sys mem }
 
-def lsg [] { ls | sort-by type name -i | grid -c | str trim }
+def lsg [] { ls | sort-by type name -i | grid -c --icons | str trim }
 
-def config-backup [dir: string = ($nu.home-path | path join "AppData" "Roaming" "nushell" "backup")] {
+def "config backup" [dir: string = ($nu.home-path | path join "AppData" "Roaming" "nushell" "backup")] {
   let date: string = (date now | format date "%Y_%m_%d_%H_%M_%S")
 
   let envFileName = $"env-($date).nu"
@@ -109,6 +125,13 @@ def processes [] {
 def kill [process: string@processes] {
   ^taskkill /f /im $process
 }
+
+alias pkill = kill
+
+def pinfo [process: string@processes] {
+  ps | where name == $process
+}
+
 
 def download [url: string, savePath?: string] {
   mut path = $url | path basename
@@ -188,3 +211,39 @@ module java {
     print "Java 23 Graal activated"
   }
 }
+
+let completers = [
+  "git",
+  "inshellisense",
+  "adb",
+  "cargo",
+  "bat",
+  "batgrep",
+  "rg",
+  "bun",
+  "code",
+  "ffmpeg",
+  "firefox",
+  "java",
+  "jar",
+  "javac",
+  "lua",
+  "make",
+  "nano",
+  "node",
+  "npm",
+  "nu",
+  "ollama",
+  "pip",
+  "python",
+  "rustc",
+  "rust-analyzer",
+  "ssh",
+  "ssh-keygen",
+  "starship",
+  "tsc",
+]
+
+$env.CARAPACE_BRIDGES = $completers | str join ",";
+mkdir ~/.cache/carapace
+carapace _carapace nushell | save --force ~/.cache/carapace/init.nu
